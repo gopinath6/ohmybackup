@@ -26,9 +26,22 @@ func getStatusCode(url string) string {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	// fmt.Println(resp.ContentLength)
 	return strconv.Itoa(resp.StatusCode)
 }
 
+func getsize(url string) int {
+
+	//resp, err := http.Get(url)
+	headResp, err := http.Head(url)
+	if err != nil {
+		log.Fatalln(err)
+	}
+		length, _ := strconv.Atoi(headResp.Header.Get("Content-Length"))
+		//fmt.Println(length)
+		 fmt.Println(headResp.Header.Get("Content-Length"), length)
+	return length
+}
 func scanFiles() {
 
 	for _, fndPTHS := range foundedFolders {
@@ -40,6 +53,7 @@ func scanFiles() {
 		}
 		defer fileslist.Close()
 		var lastCheck = ""
+		var size = ""
 		fileScan := bufio.NewScanner(fileslist)
 		for fileScan.Scan() {
 
@@ -55,8 +69,10 @@ func scanFiles() {
 				var urlE = fndPTHS + "/" + fileScan.Text() + scanner.Text()
 
 				lastCheck = getStatusCode(urlE)
+				size=string(getsize(urlE))
 
-				var chckDrm = urlE + " | Response Code : " + lastCheck
+
+				var chckDrm = urlE + " | 1Response Code : " + lastCheck + " Size " + string(size)
 
 				if lastCheck == "200" || lastCheck == "301" || lastCheck == "302" || lastCheck == "304" || lastCheck == "307" || lastCheck == "403" {
 					fmt.Printf("\033[2K\r%s\n", "* Founded :"+chckDrm)
@@ -84,6 +100,7 @@ func scanPath(filename string, hostname string) string {
 	defer file.Close()
 
 	var lastCheck = ""
+	var size = ""
 	scanner := bufio.NewScanner(file)
 
 	fmt.Println("\n************* Starting Scan Backups PATHS *************\n")
@@ -91,8 +108,9 @@ func scanPath(filename string, hostname string) string {
 	for scanner.Scan() {
 		var urlE = hostname + "/" + scanner.Text()
 		lastCheck = getStatusCode(urlE)
+		size=string(getsize(urlE))
 
-		var chckDrm = "" + urlE + " | Response Code : " + lastCheck
+		var chckDrm = "" + urlE + " | 2Response Code : " + lastCheck + " Size " + string(size)
 
 		if lastCheck == "200" || lastCheck == "301" || lastCheck == "302" || lastCheck == "304" || lastCheck == "307" || lastCheck == "403" {
 			fmt.Printf("\033[2K\r%s\n", "* Founded : "+chckDrm)
